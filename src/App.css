@@ -1,5 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
+/* src/App.css */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap");
 
+/* =========================================================
+   GLOBAL RESET + THEME TOKENS
+   ========================================================= */
 * {
   margin: 0;
   padding: 0;
@@ -10,45 +14,94 @@ html,
 body,
 #root {
   height: 100%;
+  width: 100%;
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
   background-color: #0e1117;
-  overflow-x: hidden;
   line-height: 1.6;
+  padding: 0;
+  overflow: hidden; /* desktop app-shell feel (mobile overrides below) */
 }
 
+/* Theme variables (your JS toggles .app.light vs .app.dark) */
 .app {
-  min-height: 100%;
+  --text: rgba(255, 255, 255, 0.95);
+  --muted: rgba(255, 255, 255, 0.72);
+  --muted2: rgba(255, 255, 255, 0.58);
+
+  --panel: rgba(255, 255, 255, 0.10);
+  --panel2: rgba(0, 0, 0, 0.18);
+  --panel3: rgba(255, 255, 255, 0.08);
+
+  --border: rgba(255, 255, 255, 0.12);
+  --border2: rgba(255, 255, 255, 0.10);
+
+  --shadow: 0 18px 80px rgba(0, 0, 0, 0.42);
+  --shadow2: 0 12px 36px rgba(0, 0, 0, 0.22);
+
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+
+  --focus: rgba(255, 255, 255, 0.38);
+
+  --bgOverlayA: rgba(0, 0, 0, 0.28);
+  --bgOverlayB: rgba(0, 0, 0, 0.84);
+
+  color: var(--text);
+}
+
+.app.light {
+  --text: rgba(12, 16, 24, 0.92);
+  --muted: rgba(12, 16, 24, 0.68);
+  --muted2: rgba(12, 16, 24, 0.54);
+
+  /* In light mode, we still want “glass” but with more ink + less haze */
+  --panel: rgba(255, 255, 255, 0.72);
+  --panel2: rgba(255, 255, 255, 0.58);
+  --panel3: rgba(255, 255, 255, 0.62);
+
+  --border: rgba(0, 0, 0, 0.10);
+  --border2: rgba(0, 0, 0, 0.08);
+
+  --shadow: 0 22px 90px rgba(0, 0, 0, 0.28);
+  --shadow2: 0 12px 34px rgba(0, 0, 0, 0.18);
+
+  --focus: rgba(0, 0, 0, 0.22);
+
+  /* Stronger “ink” overlay so light GIFs don’t wash UI out */
+  --bgOverlayA: rgba(255, 255, 255, 0.18);
+  --bgOverlayB: rgba(0, 0, 0, 0.72);
+}
+
+/* =========================================================
+   APP SHELL
+   ========================================================= */
+.app {
   height: 100%;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: background-image 0.5s ease-in-out;
-}
-
-.app.light {
-  color: #111;
-}
-
-.app.dark {
-  color: #fff;
 }
 
 .weather-background {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.5;
+  opacity: 0.58; /* slightly richer than before */
   pointer-events: none;
+  filter: saturate(1.02) contrast(1.02);
 }
 
+/* Smooth in, but respect reduced motion */
 .fade-in {
   animation: fadeIn 0.6s ease-in;
 }
@@ -58,45 +111,130 @@ body {
     opacity: 0;
   }
   to {
-    opacity: 0.5;
+    opacity: 0.58;
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+  }
+}
+
+/* Readability overlay — adapts via theme variables */
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 18% 12%,
+    var(--bgOverlayA),
+    var(--bgOverlayB) 62%
+  );
+}
+
+/* =========================================================
+   MAIN PANEL (glass “device”)
+   - upgraded desktop layout: fill width, reduce empty right space
+   - align left/right columns visually
+   ========================================================= */
 main {
   position: relative;
   z-index: 2;
-  width: 100%;
-  max-width: 720px;
-  padding: 2rem 1.5rem;
-  border-radius: 20px;
+  width: min(1360px, calc(100vw - 2rem));
+  margin: 1rem;
+  padding: 1.35rem;
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
-  flex-grow: 1;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
 }
 
+/* Nicer scrollbars (desktop) */
+main::-webkit-scrollbar {
+  width: 10px;
+}
+main::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+main::-webkit-scrollbar-track {
+  background: transparent;
+}
+.app.light main::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Landscape layout (your existing class toggle) */
+.landscape-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr; /* left content gets more space */
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ensure panels behave inside grid */
+.left-panel,
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 0.95rem;
+  box-shadow: var(--shadow2);
+}
+
+.card__title {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.65rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+/* =========================================================
+   HEADER / LOGO
+   ========================================================= */
 .app-header {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 1.8rem;
+  padding-top: 0.15rem;
 }
 
 .logo {
-  width: 180px;
+  width: 188px;
   height: auto;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.38));
+}
+.app.light .logo {
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.18));
 }
 
-/* Search section */
+/* =========================================================
+   SEARCH
+   ========================================================= */
 .search-box {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 2rem;
 }
 
 .search-input-wrapper {
@@ -106,119 +244,364 @@ main {
 }
 
 .search-bar {
-  flex: 1;
-  padding: 1rem 2.5rem 1rem 1rem;
-  font-size: 1rem;
-  border-radius: 12px;
-  border: none;
-  background: rgba(255, 255, 255, 0.95);
-  color: #111;
-  backdrop-filter: blur(6px);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease;
+  width: 100%;
+  padding: 0.92rem 2.7rem 0.92rem 1rem;
+  font-size: 0.98rem;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.96);
+  color: rgba(12, 16, 24, 0.92);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.14);
+  transition: transform 0.18s ease, background 0.18s ease, border 0.18s ease;
 }
 
 .search-bar::placeholder {
-  color: #444;
+  color: rgba(0, 0, 0, 0.52);
 }
 
 .search-bar:focus {
   outline: none;
-  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+.app.dark .search-bar {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.94);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22);
+}
+.app.dark .search-bar::placeholder {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .locate-btn {
   position: absolute;
-  right: 0.75rem;
+  right: 0.65rem;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #111;
-  font-size: 1.2rem;
+  height: 40px;
+  width: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(12, 16, 24, 0.88);
+  font-size: 1.05rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .locate-btn:hover {
-  opacity: 0.8;
+  transform: translateY(-50%) scale(1.02);
+  opacity: 0.95;
 }
 
-/* Optional dark theme overrides */
-.app.dark .search-bar {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-.app.dark .search-bar::placeholder {
-  color: #ccc;
+.locate-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .app.dark .locate-btn {
-  color: #fff;
+  background: rgba(0, 0, 0, 0.22);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .location-status {
-  margin-top: 6px;
-  font-size: 0.85rem;
-  color: #555;
   text-align: center;
+  font-size: 0.92rem;
+  color: var(--muted);
 }
 
-/* Location / Weather Info */
+/* Accessible focus */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   EMPTY / ERROR
+   ========================================================= */
+.empty-state {
+  text-align: center;
+  padding: 1.05rem 0.95rem;
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+.app.light .empty-state {
+  background: rgba(255, 255, 255, 0.46);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.empty-title {
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.empty-sub {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.error-message {
+  color: #ff6b6b;
+  text-align: center;
+  font-weight: 800;
+}
+
+/* =========================================================
+   LOCATION / WEATHER
+   ========================================================= */
 .location-box {
   text-align: center;
-  margin-bottom: 1.5rem;
 }
 
 .location {
-  font-size: 2rem;
+  font-size: 1.72rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  color: var(--text);
 }
 
 .last-updated {
   font-size: 0.9rem;
   margin-top: 4px;
-  color: #aaa;
+  color: var(--muted);
 }
 
 .weather-box {
   text-align: center;
-  margin-bottom: 2rem;
 }
 
 .weather {
-  font-size: 1.4rem;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 650;
+  margin-bottom: 0.35rem;
   text-transform: capitalize;
+  color: var(--muted);
 }
 
 .temp {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  font-weight: 600;
+  font-weight: 900;
   line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .temp-value {
-  font-size: 4.5rem;
+  font-size: 4.15rem;
 }
-
 .temp-unit {
-  font-size: 1.5rem;
-  padding-top: 0.5rem;
+  font-size: 1.2rem;
+  padding-top: 0.7rem;
   margin-left: 4px;
+  color: var(--muted);
 }
 
-/* Forecast */
+.metrics-row {
+  margin-top: 0.85rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.metric {
+  padding: 0.68rem 0.58rem;
+  border-radius: 14px;
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+}
+
+.metric__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 2px;
+}
+
+.metric__value {
+  font-size: 1.06rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+/* =========================================================
+   PREP PANEL (polished)
+   ========================================================= */
+.prep-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.65rem;
+}
+
+.prep-title {
+  margin-bottom: 0;
+}
+
+.prep-controls {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.prep-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted2);
+}
+
+/* Chips row + subtle edge fades to feel premium */
+.prep-chips {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
+.prep-chips::-webkit-scrollbar {
+  height: 8px;
+}
+.prep-chips::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+.app.light .prep-chips::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+.prep-chips::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Edge fades */
+.prep-chips::before,
+.prep-chips::after {
+  content: "";
+  position: sticky;
+  top: 0;
+  width: 18px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.prep-chips::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.22), transparent);
+}
+.prep-chips::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.22), transparent);
+}
+.app.light .prep-chips::before {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.72), transparent);
+}
+.app.light .prep-chips::after {
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.72), transparent);
+}
+
+.prep-chip {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.42rem 0.68rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: 0.92;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease,
+    border 0.15s ease;
+}
+
+.app.light .prep-chip {
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.prep-chip:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.prep-chip.is-active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.26);
+  opacity: 1;
+}
+.app.light .prep-chip.is-active {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+/* Prep tips list */
+.prep-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+.prep-item {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 0.72rem 0.78rem;
+}
+
+.app.light .prep-item {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.prep-icon {
+  width: 28px;
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.prep-text {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.prep-foot {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* =========================================================
+   FORECASTS
+   - right panel should feel filled: a 24-hour band + 3-5 day band
+   - use grid cards at wide widths to reduce “empty” look
+   ========================================================= */
+.forecast-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
 .forecast-container h3 {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin: 1.2rem 0 0.4rem;
+  font-size: 1.02rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: 0.01em;
+  color: var(--text);
 }
 
 .hourly-forecast,
@@ -226,51 +609,309 @@ main {
   display: flex;
   overflow-x: auto;
   gap: 12px;
-  padding-bottom: 1rem;
   scroll-snap-type: x mandatory;
+  padding-bottom: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hourly-forecast::-webkit-scrollbar,
+.daily-forecast::-webkit-scrollbar {
+  height: 8px;
+}
+.hourly-forecast::-webkit-scrollbar-thumb,
+.daily-forecast::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+.app.light .hourly-forecast::-webkit-scrollbar-thumb,
+.app.light .daily-forecast::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+.hourly-forecast::-webkit-scrollbar-track,
+.daily-forecast::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .forecast-hour,
 .forecast-day {
-  min-width: 100px;
+  min-width: 112px;
   flex-shrink: 0;
   text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 0.9rem 0.6rem;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 0.85rem 0.65rem;
   scroll-snap-align: start;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app.light .forecast-hour,
+.app.light .forecast-day {
+  background: rgba(255, 255, 255, 0.62);
 }
 
 .forecast-hour div,
 .forecast-day div {
   margin-bottom: 5px;
   font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
-.error-message {
-  color: #ff6b6b;
-  text-align: center;
-  margin-bottom: 1rem;
-  font-weight: 500;
+.mini-badges {
+  margin-top: 6px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .temp-value {
-    font-size: 3.5rem;
+.mini-badge {
+  font-size: 0.72rem;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.20);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  opacity: 0.95;
+}
+.app.light .mini-badge {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* =========================================================
+   WARNING / MODAL
+   ========================================================= */
+.warning-card {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.warning-title {
+  font-weight: 900;
+  color: var(--text);
+}
+
+.warning-body {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.warning-btn {
+  justify-self: start;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.55rem 0.75rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.warning-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  width: min(560px, 100%);
+  background: rgba(20, 24, 34, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.modal__titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.modal__title {
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.modal__close {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 10px;
+}
+
+.modal__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modal__body {
+  opacity: 0.92;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal__actions {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal__btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+}
+
+.modal__btn:hover {
+  opacity: 0.92;
+}
+
+/* =========================================================
+   RESPONSIVE: TABLET DOWN
+   ========================================================= */
+@media (max-width: 980px) {
+  .landscape-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    width: min(820px, calc(100vw - 2rem));
+  }
+}
+
+/* =========================================================
+   RESPONSIVE: MOBILE
+   - allow scrolling
+   - reduce padding
+   - tighten type scale
+   ========================================================= */
+@media (max-width: 680px) {
+  body {
+    overflow: auto; /* mobile needs scroll */
+  }
+
+  .app {
+    align-items: flex-start;
+    padding: 0.75rem 0;
+  }
+
+  main {
+    margin: 0.75rem;
+    padding: 1rem;
+    border-radius: 18px;
+    gap: 0.85rem;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .logo {
+    width: 164px;
   }
 
   .location {
-    font-size: 1.4rem;
+    font-size: 1.42rem;
   }
 
   .weather {
-    font-size: 1.2rem;
+    font-size: 1.02rem;
+  }
+
+  .temp-value {
+    font-size: 3.25rem;
+  }
+
+  .temp-unit {
+    font-size: 1.02rem;
+    padding-top: 0.62rem;
+  }
+
+  .metrics-row {
+    gap: 0.45rem;
+  }
+
+  .metric {
+    padding: 0.58rem 0.5rem;
+    border-radius: 12px;
+  }
+
+  .metric__label {
+    font-size: 0.68rem;
+  }
+
+  .metric__value {
+    font-size: 0.98rem;
   }
 
   .forecast-hour,
   .forecast-day {
-    min-width: 90px;
+    min-width: 96px;
+    padding: 0.75rem 0.55rem;
+  }
+
+  .forecast-container h3 {
+    font-size: 0.98rem;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE: VERY SMALL MOBILE
+   ========================================================= */
+@media (max-width: 420px) {
+  main {
+    margin: 0.6rem;
+    padding: 0.92rem;
+  }
+
+  .location {
+    font-size: 1.24rem;
+  }
+
+  .temp-value {
+    font-size: 3rem;
+  }
+
+  .forecast-hour,
+  .forecast-day {
+    min-width: 88px;
+  }
+}
+
+/* =========================================================
+   MOBILE LANDSCAPE (keep tidy)
+   ========================================================= */
+@media (max-width: 900px) and (orientation: landscape) {
+  body {
+    overflow: auto;
+  }
+
+  .app {
+    align-items: flex-start;
+  }
+
+  main {
+    margin: 0.75rem;
+    padding: 1rem;
   }
 }
