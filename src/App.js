@@ -276,8 +276,8 @@ function buildPrepTips(current, hoursWindow, hoursOut = 1) {
 
   if (tips.length === 0)
     tips.push({
-      icon: "✅",
-      text: `Looks comfortable for ${label} — dress normally and stay hydrated.`,
+      icon: "👌",
+      text: `Looks comfortable for ${label} — dress normally.`,
     });
 
   return tips;
